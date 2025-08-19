@@ -1,0 +1,315 @@
+@import 'tailwindcss';
+@import './fonts.css';
+
+@plugin 'tailwindcss-animate';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-font-primary: var(--font-primary);
+    --color-font-secondary: var(--font-secondary);
+    --color-grey: var(--grey);
+    --color-grey1: var(--grey1);
+    --color-red: var(--red);
+    --color-table-head: var(--table-head);
+    --color-table-body: var(--table-body);
+
+
+}
+
+@layer utilities {
+    .font-tree-bold {
+        font-family: 'Figtree-Bold';
+        font-weight: 700;
+    }
+    .font-tree-semibold {
+        font-family: 'Figtree-Semibold';
+        
+    }
+    .font-tree-medium {
+        font-family: 'Figtree-Medium';
+        font-weight: 500;
+    }
+    .font-tree-regular {
+        font-family: 'Figtree-Regular';
+        font-weight: 400;
+    }
+    .font-tree-light {
+        font-family: 'Figtree-Light';
+        font-weight: 300;
+    }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(17.76% 0 0);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(96.06% 0.024 83.42); /* #FAF1E0 */
+    --accent-foreground: oklch(65.13% 0.154 59.2) /*#D27401*/;
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.577 0.245 27.325);
+
+    --border: oklch(90.97% 0 0); /* #E1E1E1 */
+    --input: #fff;
+    --ring: oklch(0.87 0 0);
+
+    --radius: 0.625rem;
+    
+    --sidebar: oklch(99.15% 0.006 84.57); /* #FEFCF8 */
+    --sidebar-foreground: oklch(42.76% 0 0); /* #4F4F4F */
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(96.06% 0.024 83.42); /* #FAF1E0 */
+    --sidebar-accent-foreground: oklch(65.13% 0.154 59.2) /*#D27401*/;
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.87 0 0);
+
+    --primary: oklch(65.13% 0.154 59.2); /*#D27401*/
+
+    --font-primary: oklch(42.76% 0 0); /* #4F4F4F */
+    --font-secondary: oklch(17.76% 0 0); /*#111111*/
+    --grey: #f7f7f7;
+    --grey1: #898989;
+    --red: #b71c1c;
+
+    --table-head:#f7f7f7;
+    --table-body:#fff;
+}
+
+.dark {
+    --background: #191D23 ;
+    --foreground: oklch(0.985 0 0);
+
+    --card: #262C36;
+    --card-foreground: oklch(0.985 0 0);
+
+    --popover: oklch(0.145 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(65.13% 0.154 59.2); /*#D27401*/
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: #262C36;
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(96.06% 0.024 83.42); /* #FAF1E0 */
+    --accent-foreground: oklch(65.13% 0.154 59.2) /*#D27401*/;
+    --destructive: oklch(0.396 0.141 25.723);
+    --destructive-foreground: oklch(0.637 0.237 25.331);
+
+    --border: #576776;
+    --input: #262C36;
+    --ring: oklch(0.439 0 0);
+
+    --sidebar: #1a222e;
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: #262C36;
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.269 0 0);
+    --sidebar-ring: oklch(0.439 0 0);
+
+    --font-primary: #fff; /* #4F4F4F */
+    --font-secondary: #e3e3e3;
+    --grey: #262C36;
+    --grey1: #898989;
+    --red:#fb5d54;
+
+    --table-head:#262C36;
+    --table-body: #191D23;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    .heading {
+        @apply text-base;
+        font-family: 'Figtree-Semibold';
+    }
+
+    .button {
+        @apply inline-flex h-10 items-center justify-center rounded-xl text-sm text-white;
+        font-family: 'Figtree-Semibold';
+    }
+    .button-primary {
+        @apply bg-primary px-4 py-2 hover:bg-primary/90;
+        font-family: 'Figtree-Semibold';
+    }
+    .button-icon {
+        @apply mr-2;
+    }
+
+    .form-input {
+        @apply h-12 rounded-xl border border-border bg-input px-3 py-[10px] outline-0 focus:border-primary;
+        font-family: 'Figtree-Semibold'; 
+    }
+    .form-input::placeholder {
+        font-family: 'Figtree-Regular';
+    }
+
+    .customTable .rdt_TableHeadRow {
+        @apply !min-h-[36px];
+        font-family: 'Figtree-Semibold';
+        
+    }
+
+    .customTable .rdt_TableCol {
+        @apply border-border py-0 text-xs text-font-primary uppercase bg-table-head;
+        font-family: 'Figtree-Semibold';
+        
+    }
+    .customTable .rdt_TableCell {
+        @apply border-border bg-table-body py-3 text-sm text-font-secondary;
+        font-family: 'Figtree-Regular';
+        
+    }
+    .rdt_Pagination{
+        @apply !bg-table-body !text-font-secondary;
+    }
+    .rdt_Pagination button ,.rdt_Pagination svg{
+        @apply !text-font-secondary fill-font-secondary;
+    }
+
+    .customTable .rdt_Table .cvFfSA  {
+        @apply !py-4 !bg-input !text-font-primary;
+    }
+
+    [data-column-id='1'] {
+        font-family: 'Figtree-Semibold' !important;
+        
+    }
+}
+
+/* Scrollbar track */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/* Scrollbar thumb */
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #ebc47e; /* Tailwind green-400 */
+    border-radius: 9999px;
+    border: 2px solid #f3f4f6; /* Tailwind gray-100 (background) */
+}
+
+/* Scrollbar track */
+.scrollbar-thin::-webkit-scrollbar-track {
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+    border-radius: 9999px;
+}
+/* toast css */
+.Toastify__toast{  
+    box-shadow: 0px 4px 12px 1px #1111111F;
+    width: 100%!important;
+}
+@media (min-width:768px) {
+    .Toastify__toast{  
+    max-width: 380px;
+    }
+}
+.Toastify__toast-icon {
+  width: 16px !important; 
+  height: 16px !important;
+}
+.Toastify__toast--success .Toastify__toast-icon svg{
+  fill: #1B5E20 !important;
+}
+.Toastify__toast--error .Toastify__toast-icon svg{
+  fill: #B71C1C !important;
+}
+.Toastify__toast--success {
+  background: #E8F5E9 !important; /* green */
+  color: #1B5E20 !important;
+  font-size: 14px;
+}
+.Toastify__toast--error {
+  background: #FFEBEE !important; /* red */
+  color: #B71C1C !important;
+  font-size: 14px;
+}
+/*overlay css*/
+.bg-overlay{
+    background-color: rgba(17, 17, 17, 0.5);
+}
