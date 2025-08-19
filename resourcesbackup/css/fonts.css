@@ -1,0 +1,57 @@
+@font-face {
+    font-family: 'Figtree-Bold';
+    src: url('../fonts/Figtree-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Figtree-semiBold';
+    src: url('../fonts/Figtree-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Figtree-Medium';
+    src: url('../fonts/Figtree-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Figtree-Regular';
+    src: url('../fonts/Figtree-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Figtree-Light';
+    src: url('../fonts/Figtree-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+.font-tree-bold {
+    font-family: 'Figtree-Bold';
+    font-weight: 700;
+}
+.font-tree-semibold {
+    font-family: 'Figtree-Semibold';
+    font-weight: 600;
+}
+
+.font-tree-medium {
+    font-family: 'Figtree-Medium';
+    font-weight: 500;
+}
+.font-tree-regular {
+    font-family: 'Figtree-Regular';
+    font-weight: 400;
+}
+
+.font-tree-light {
+    font-family: 'Figtree-light';
+    font-weight: 300;
+}
+
