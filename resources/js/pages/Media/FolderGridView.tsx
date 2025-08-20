@@ -1,11 +1,6 @@
 import { Plus } from 'lucide-react';
 import folderPath from '../../../../public/assets/images/folder.svg';
-
-interface FolderItem {
-  title: string;
-  fileCount: number;
-  fileSize: string;
-}
+import { FolderItem } from '@/types';
 
 interface FolderGridViewProps {
   folders: FolderItem[];
@@ -13,6 +8,7 @@ interface FolderGridViewProps {
 }
 
 export default function FolderGridView({ folders, onCreateFolder }: FolderGridViewProps) {
+  console.log("current folder list..",folders);
   return (
     <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-7'>
       {folders.map((folder, index) => (

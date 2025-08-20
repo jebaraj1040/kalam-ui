@@ -28,8 +28,6 @@ const FolderSelect: React.FC<FolderSelectProps> = ({
 
   const selectedOption =
     options.find((opt) => opt.value === value?.toString()) ?? null;
-
-  // Custom Menu: only show if input is not empty and there are matches
   const Menu = (props: any) => {
     if (!inputValue.trim() || !props.options.length) return null;
     return <components.Menu {...props} />;

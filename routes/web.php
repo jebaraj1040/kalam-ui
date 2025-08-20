@@ -59,6 +59,7 @@ Route::middleware(['auth', 'verified', CheckRoutePermission::class])->name('admi
      * Folder
      */
     Route::resource('folder', FolderController::class);
+    Route::get('fetch-folder-list', [FolderController::class, 'fetchFolderList']);
     Route::get('/pages/fetch-components/{templateId}', [PageController::class, 'fetchTemplateComponents'])->name('check-slug');
     /**
      * slug

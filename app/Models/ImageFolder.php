@@ -14,4 +14,16 @@ class ImageFolder extends Eloquent
         'name',
         'parentfolder',
     ];
+    public function media()
+    {
+        return $this->hasMany(Media::class, 'path_id', 'id');
+    }
+    public function category()
+    {
+        return $this->belongsTo(self::class, 'parentfolder');
+    }
+    public function children()
+    {
+        return $this->hasMany(self::class, 'parentfolder', 'id');
+    }
 }

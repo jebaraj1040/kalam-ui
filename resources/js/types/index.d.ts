@@ -98,3 +98,8 @@ export type Folder = {
     id: string;
     tagname: string;
   };
+  export interface FolderItem {
+  title: string;
+  fileCount: number;
+  fileSize: string;
+}

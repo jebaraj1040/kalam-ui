@@ -11,8 +11,8 @@ class Media extends Eloquent
     protected $collection = 'media';
 
     protected $fillable = [
-        'name',      
+        'name',
         'path_id',
-        'tags'   
+        'tags'
     ];
 }

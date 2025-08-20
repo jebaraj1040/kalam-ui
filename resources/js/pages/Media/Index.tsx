@@ -1,4 +1,4 @@
-import { Component, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
@@ -22,21 +22,20 @@ import {
 } from '@/components/ui/select';
 import DataTable, { TableColumn } from 'react-data-table-component';
 // Import components
-import FolderGridView from './FolderGridView';
-import { Folder, ImageTag, MediaItem } from '@/types';
+import { Folder, FolderItem, ImageTag, MediaItem } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import FolderGridView from './FolderGridView';
 import FolderCreationForm from './FolderCreationForm';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import MediaUpload from './MediaUpload';
-import UploadMediaPopup from './UploadMediaPopup';
-import MediaGridView from './MediaGridView';
-import EmptyState from './EmptyState';
 
 type MediaProps = {
   pages: any;
   breadcrumbs: any;
-  folders: any;
   mediaItems: MediaPagination;
   imageTags: ImageTag[];
+  folders:Folder[];
 };
 type MediaPagination = {
     data: MediaItem[];
@@ -46,13 +45,15 @@ type MediaPagination = {
     total: number;
 };
 
-export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTags }: MediaProps) {
+export default function Media({ pages, breadcrumbs, mediaItems, imageTags,folders }: MediaProps) {
   const [isCreateFolder, setCreateFolder] = useState(false);
   const [isMediaUpload, setMediaUpload] = useState(false);
   const [isUploadPopup, setUploadPopup] = useState(false);
   const [newFieldType, setNewFieldType] = useState(undefined);
   const [isGridView, setIsGridView] = useState(true);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [folderData, setFolderData] = useState<FolderItem[]>([]);
+  const [folderStatus,setFolderStatus] = useState(false);
 
   const openCreateDialog = () => setCreateFolder(true);
   const openMediaUpload = () => setMediaUpload(true);
@@ -97,6 +98,46 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
       name: 'Loan Origination Systems - A Complete Guide'
     }
   ];
+  useEffect(() => {
+      fetchFolderList();
+    },[folderStatus]);
+  const fetchFolderList = async () => {
+    try {
+      const response = await axios.get('/fetch-folder-list');
+      if (response.data.success) {
+        setFolderData(response?.data?.folderList?.folders);
+      } else {
+        toast.error(`Folder creation failed: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+    }
+  };
+  console.log("current foldersfdasfajflksalfkjlsdakf...",folders);
+
+  // const CreateFolders = [
+  //       {
+  //           title: 'Novac home page',
+  //           fileCount: 5,
+  //           fileSize: '2 MB',
+  //       },
+  //       {
+  //           title: 'Solutions',
+  //           fileCount: 5,
+  //           fileSize: '2 MB',
+  //       },
+  //       {
+  //           title: 'STATIM',
+  //           fileCount: 5,
+  //           fileSize: '2 MB',
+  //       }
+  //       ,
+  //       {
+  //           title: 'Novac Ziva',
+  //           fileCount: 5,
+  //           fileSize: '2 MB',
+  //       }
+  //   ];
 
   // Table columns
   const columns: TableColumn<Component>[] = [
@@ -270,6 +311,8 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
         },
     ];
 
+
+
   return (
     <>
       <AppLayout breadcrumbs={breadcrumbs}>
@@ -280,7 +323,7 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
           </div>
           
           <FolderGridView 
-            folders={folders} 
+            folders={folderData} 
             onCreateFolder={openCreateDialog} 
           />
           
@@ -345,12 +388,12 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
           </div>
           
           {/* Media Grid */}
-          {isGridView && (
+          {/* {isGridView && (
             <MediaGridView 
               mediaData={mediaData} 
               onUploadMedia={openUploadPopup} 
             />
-          )}
+          )} */}
           
           {/* Media Table */}
           {!isGridView && (
@@ -368,16 +411,18 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
             </div>
           )}
           
-          <EmptyState 
+          {/* <EmptyState 
             onCreateFolder={openCreateDialog}
             onAddAssets={openMediaUpload}
-          />
+          /> */}
         </div>
 
         {/* Modal components */}
         <FolderCreationForm 
           isOpen={isCreateFolder} 
-          onOpenChange={setCreateFolder} 
+          onOpenChange={setCreateFolder}
+          onFolderChange={setFolderStatus}
+          folders={folders}
         />
         
         <MediaUpload 
@@ -385,10 +430,10 @@ export default function Media({ pages, breadcrumbs, folders, mediaItems, imageTa
           onOpenChange={setMediaUpload} 
         />
         
-        <UploadMediaPopup 
+        {/* <UploadMediaPopup 
           isOpen={isUploadPopup} 
           onOpenChange={setUploadPopup} 
-        />
+        /> */}
       </AppLayout>
     </>
   );

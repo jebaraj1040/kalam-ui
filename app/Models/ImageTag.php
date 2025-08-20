@@ -11,6 +11,6 @@ class ImageTag extends Eloquent
     protected $collection = 'media';
 
     protected $fillable = [
-        'tagname',   
+        'tagname',
     ];
 }

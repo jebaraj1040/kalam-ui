@@ -28,13 +28,29 @@ class FolderController extends Controller
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $folders = ImageFolder::all();
         return Inertia::render('Folder/Index', [
             'breadcrumbs' => $this->breadcrumbs,
             'folders' => $folders,
         ]);
+    }
+    public function fetchFolderList()
+    {
+        $folders = ImageFolder::whereNull('parentfolder')->with('media')->orderBy('id', 'desc')->get();
+        $folderList = [];
+        if (!empty(count($folders))) {
+            foreach ($folders as $key => $folder) {
+                $folderList[$key] = [
+                    'title' => $folder->name,
+                    'fileCount' => $folder->media->count()
+                ];
+            }
+        }
+        $data['folders'] = $folderList;
+        $data['breadcrumbs'] = $this->breadcrumbs;
+        return response()->json(['success' => true, 'folderList' => $data]);
     }
 
     public function store(Request $request)

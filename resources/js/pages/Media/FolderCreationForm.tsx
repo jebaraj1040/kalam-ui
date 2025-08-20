@@ -1,28 +1,21 @@
 import { Button } from '@/components/ui/button';
 import React, {useState} from 'react';
-import {router} from '@inertiajs/react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import FolderSelect from './FolderSelect';
+import { Folder } from '@/types';
 
 interface FolderCreationFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onFolderChange:(status:boolean)=>void;
+  folders:Folder[];
 }
 
-export default function FolderCreationForm({ isOpen, onOpenChange }: FolderCreationFormProps) {
+export default function FolderCreationForm({ isOpen, onOpenChange,onFolderChange,folders }: FolderCreationFormProps) {
   const [formData, setFormData] = useState({
     folderName: "",
     parent_folder_id: ""
@@ -36,15 +29,14 @@ export default function FolderCreationForm({ isOpen, onOpenChange }: FolderCreat
       [name]: value,
     }));
   };
-
   const handleFolderCreate = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
       const response = await axios.post('/folder', formData);
       if (response.data.success) {
         toast.success(response.data.message);
-        router.push("media");
         onOpenChange(false);
+        onFolderChange(true);
       } else {
         toast.error(`Folder creation failed: ${response.data.message}`);
       }
@@ -52,7 +44,6 @@ export default function FolderCreationForm({ isOpen, onOpenChange }: FolderCreat
       console.error('Error creating folder:', error);
     }
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -72,6 +63,12 @@ export default function FolderCreationForm({ isOpen, onOpenChange }: FolderCreat
             onChange={handleInputChange}
             required
           />
+          <FolderSelect 
+          folders={folders}
+          value={formData.parent_folder_id}
+          onChange={(value) => setFormData(prev => ({ ...prev, parent_folder_id: value ?? "" }))}
+          placeholder="-- Select Parent Folder --"
+                  />
           <InputError />
           <DialogFooter className="gap-2">
             <DialogClose asChild>

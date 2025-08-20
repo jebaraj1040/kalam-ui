@@ -140,6 +140,7 @@ const MediaDashboard = ({ breadcrumbs, folders, mediaItems, imageTags }: Props) 
         setNewlyCreatedOptions([]);
         // setIsUploadModalOpen(false);
     };
+    console.log("folders data...",folders);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex justify-end gap-4 p-6">
