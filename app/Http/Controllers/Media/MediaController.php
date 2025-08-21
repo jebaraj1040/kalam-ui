@@ -58,67 +58,123 @@ class MediaController extends Controller
             'imageTags' => $imageTags->values(),
         ]);
     }
-
-
-
-
     public function store(Request $request)
     {
         try {
-            Log::info($request);
-
-            $files = $request->file('file');
             $allowedExtensions = ['png', 'svg', 'webp', 'woff2', 'csv', 'pdf'];
             $rejectedFiles = [];
-
-            $folderPathId = $request->input('folder_path_id');
-            $folderData = ImageFolder::find($folderPathId);
-            $finalTagIds = $this->resolveFinalImageTagIds(
-                $request->input('image_tags', '[]'),
-                $request->input('New_image_tags', '[]')
-            );
-
-            Log::info($folderData);
-
-            if (!$folderData) {
+            $folderPathId = $request->folderPathId;
+            $mediaFiles = $request->file('files');
+            $mediaTags = $request->filesTags;
+            $isExistFolder = ImageFolder::find($folderPathId);
+            if (!$isExistFolder) {
                 return response()->json(['error' => 'Invalid folder path ID'], 404);
             }
-
-            $relativePath = trim($folderData->name, '/');
-
+            $relativePath = trim($isExistFolder->name, '/');
             $disk = env('IS_UPLOAD_CDN') ? 'cdn_disk' : 'custom_uploads';
-
-            if (!is_array($files)) {
-                $files = [$files];
-            }
-
-            foreach ($files as $file) {
-                $extension = strtolower($file->getClientOriginalExtension());
-
-                if (!in_array($extension, $allowedExtensions)) {
-                    $rejectedFiles[] = $file->getClientOriginalName();
-                    continue;
+            $mediaData = [];
+            if (!empty($mediaFiles)) {
+                foreach ($mediaFiles as $key => $file) {
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    if (!in_array($extension, $allowedExtensions)) {
+                        $rejectedFiles[] = $file->getClientOriginalName();
+                        continue;
+                    }
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $random = Str::random(10);
+                    $fileName = "{$originalName}_{$random}.{$extension}";
+                    $fileTagIds = $this->fetchFileBaseTagId(json_decode($mediaTags[$key], true));
+                    Storage::disk($disk)->putFileAs($relativePath, $file, $fileName);
+                    Media::create([
+                        'name'    => $fileName,
+                        'path_id' => $folderPathId,
+                        'tags' => $fileTagIds,
+                    ]);
                 }
-
-                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $random = Str::random(10);
-                $fileName = "{$originalName}_{$random}.{$extension}";
-
-                Storage::disk($disk)->putFileAs($relativePath, $file, $fileName);
-
-                Media::create([
-                    'name'    => $fileName,
-                    'path_id' => $folderPathId,
-                    'tags' => $finalTagIds,
-                ]);
             }
-
             return response()->json(['success' => true, 'message' => 'asset added successful']);
         } catch (\Exception $e) {
             Log::error("Upload error: " . $e->getMessage());
             return response()->json(['error' => 'File upload failed'], 500);
         }
     }
+    public function fetchFileBaseTagId($tags = [])
+    {
+        if (!empty($tags)) {
+            foreach ($tags as $key => $tageValue) {
+                $value = $tageValue['value'];
+                $updateMediaTag = ImageTag::find($value);
+                $mediaTagId = '';
+                if ($updateMediaTag) {
+                    $mediaTagId = (string) $updateMediaTag->_id;
+                } else {
+                    $updateMediaTag = ImageTag::create([
+                        'tagname' => $value
+                    ]);
+                    $mediaTagId = (string) $updateMediaTag->_id;
+                }
+                $tagIds[] = $mediaTagId;
+            }
+        }
+        return $tagIds;
+    }
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         Log::info($request);
+
+    //         $files = $request->file('file');
+    //         $allowedExtensions = ['png', 'svg', 'webp', 'woff2', 'csv', 'pdf'];
+    //         $rejectedFiles = [];
+
+    //         $folderPathId = $request->input('folder_path_id');
+    //         $folderData = ImageFolder::find($folderPathId);
+    //         $finalTagIds = $this->resolveFinalImageTagIds(
+    //             $request->input('image_tags', '[]'),
+    //             $request->input('New_image_tags', '[]')
+    //         );
+
+    //         Log::info($folderData);
+
+    //         if (!$folderData) {
+    //             return response()->json(['error' => 'Invalid folder path ID'], 404);
+    //         }
+
+    //         $relativePath = trim($folderData->name, '/');
+
+    //         $disk = env('IS_UPLOAD_CDN') ? 'cdn_disk' : 'custom_uploads';
+
+    //         if (!is_array($files)) {
+    //             $files = [$files];
+    //         }
+
+    //         foreach ($files as $file) {
+    //             $extension = strtolower($file->getClientOriginalExtension());
+
+    //             if (!in_array($extension, $allowedExtensions)) {
+    //                 $rejectedFiles[] = $file->getClientOriginalName();
+    //                 continue;
+    //             }
+
+    //             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+    //             $random = Str::random(10);
+    //             $fileName = "{$originalName}_{$random}.{$extension}";
+
+    //             Storage::disk($disk)->putFileAs($relativePath, $file, $fileName);
+
+    //             Media::create([
+    //                 'name'    => $fileName,
+    //                 'path_id' => $folderPathId,
+    //                 'tags' => $finalTagIds,
+    //             ]);
+    //         }
+
+    //         return response()->json(['success' => true, 'message' => 'asset added successful']);
+    //     } catch (\Exception $e) {
+    //         Log::error("Upload error: " . $e->getMessage());
+    //         return response()->json(['error' => 'File upload failed'], 500);
+    //     }
+    // }
     private function resolveFinalImageTagIds(string $imageTagsJson, string $newImageTagsJson): array
     {
         $imageTags = json_decode($imageTagsJson, true) ?? [];
