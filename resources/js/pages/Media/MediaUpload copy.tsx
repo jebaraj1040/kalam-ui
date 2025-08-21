@@ -64,6 +64,7 @@ export default function MediaUpload({ isOpen, onOpenChange,options,folders }: Me
       console.log("current files",newFiles);
     });
     setFiles(prev => [...prev, ...newFiles]);
+   
     
     // Reset the input to allow selecting the same files again
     if (fileInputRef.current) {
@@ -159,18 +160,15 @@ const uploadFileToServer = async () => {
       return;
     }
     try {
-    const uploadData = new FormData();
-    uploadData.append('folderPathId', formData.folderPathId);
-    filesToUpload.forEach((file,index)=>{
-      uploadData.append('files',file.file);
-      if(file.tags && file.tags.length>0){
-        uploadData.append(`filesTags[${index}]`,JSON.stringify(file.tags))
-      }
-    })
-    console.log("current form data...",uploadData)
-        const response = await axios.post('/media', formData);
-        console.log("current response...",response);
-        return false;
+        const uploadData = new FormData();
+        uploadData.append('folderPathId', formData.folderPathId);
+        filesToUpload.forEach((file,index)=>{
+          uploadData.append(`files[${index}]`,file.file);
+          if(file.tags && file.tags.length>0){
+            uploadData.append(`filesTags[${index}]`,JSON.stringify(file.tags))
+          }
+        });
+        const response = await axios.post('/media', uploadData);
         if (response.data.success) {
            onOpenChange(true);
             console.log('Upload successful...');
@@ -186,13 +184,11 @@ const uploadFileToServer = async () => {
         } else {
             toast.error(`asset creation failed`,response.data.message);
             console.error('Upload failed:', response.data.message);
-        }   
+        }  
     } catch (error) {
         toast.error(`failed to add assets`);
         console.error('Error during upload:', error);
     }
-    console.log("current form datas..",formData);
-    return false;
     toast.success('Files uploaded successfully');
   };
 return (
@@ -338,3 +334,52 @@ return (
     </Dialog>
   );
 }
+
+[2025-08-21 19:32:48] local.INFO: array (
+  'folderPathId' => '68a571c7df64e061e70a98d5',
+  'filesTags' => 
+  array (
+    0 => '[{"label":"dev","value":"dev"},{"label":"you","value":"you"}]',
+    1 => '[{"label":"ete","value":"ete"}]',
+  ),
+  'files' => 
+  array (
+    0 => 
+    \Illuminate\Http\UploadedFile::__set_state(array(
+       'originalName' => 'Screenshot_from_2025-07-14_17-12-34.png',
+       'mimeType' => 'image/png',
+       'error' => 0,
+       'originalPath' => 'Screenshot_from_2025-07-14_17-12-34.png',
+       'test' => false,
+       'hashName' => NULL,
+    )),
+    1 => 
+    \Illuminate\Http\UploadedFile::__set_state(array(
+       'originalName' => 'novactech-cms-error.png',
+       'mimeType' => 'image/png',
+       'error' => 0,
+       'originalPath' => 'novactech-cms-error.png',
+       'test' => false,
+       'hashName' => NULL,
+    )),
+  ),
+)  
+[2025-08-21 19:33:07] local.INFO: array (
+  'folderPathId' => '68a571c7df64e061e70a98d5',
+  'filesTags' => 
+  array (
+    0 => '[{"label":"ete","value":"ete"}]',
+  ),
+  'files' => 
+  array (
+    0 => 
+    \Illuminate\Http\UploadedFile::__set_state(array(
+       'originalName' => 'novactech-cms-error.png',
+       'mimeType' => 'image/png',
+       'error' => 0,
+       'originalPath' => 'novactech-cms-error.png',
+       'test' => false,
+       'hashName' => NULL,
+    )),
+  ),
+)  
