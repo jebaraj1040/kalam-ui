@@ -6,12 +6,15 @@ import { CloudUpload, CircleCheck, CircleX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import CreatableSelect from 'react-select/creatable';
 import { ActionMeta, MultiValue } from 'react-select';
-import { OptionType } from '@/types';
+import { Folder, OptionType } from '@/types';
+import FolderSelect from './FolderSelect';
+import axios from 'axios';
 
 interface MediaUploadProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   options:OptionType[];
+  folders:Folder[];
 }
 interface UploadFile{
   id: string;
@@ -19,17 +22,21 @@ interface UploadFile{
   preview: string;
   progress: number;
   status: 'pending' | 'uploading' | 'completed' | 'error';
-  tag?: string;
+  tags?: OptionType[];
 }
 
-export default function MediaUpload({ isOpen, onOpenChange,options }: MediaUploadProps) {
+export default function MediaUpload({ isOpen, onOpenChange,options,folders }: MediaUploadProps) {
   const [newFieldType, setNewFieldType] = useState(undefined);
   const [selectedOptions, setSelectedOptions] = useState<OptionType[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
+  const [menuOpenStates, setMenuOpenStates] = useState<{ [key: string]: boolean }>({});
   const [files,setFiles] = useState<UploadFile[]>([]);
+  const [formData, setFormData] = useState({
+  folderPathId: "",
+});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(inputValue.toLowerCase()));
+  const getFilteredOptions = (inputValue: string) =>
+    options.filter((option) => option.label.toLowerCase().includes(inputValue.toLowerCase()));
   
 
   const handleFileChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
@@ -57,6 +64,7 @@ export default function MediaUpload({ isOpen, onOpenChange,options }: MediaUploa
       console.log("current files",newFiles);
     });
     setFiles(prev => [...prev, ...newFiles]);
+    
     // Reset the input to allow selecting the same files again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -84,30 +92,106 @@ export default function MediaUpload({ isOpen, onOpenChange,options }: MediaUploa
     e.preventDefault();
     e.stopPropagation();
   };
-  //Set Tag for specific file
-  const updateTag = (id: string, tag: string) => {
-    setFiles(prev => 
-      prev.map(file => 
-        file.id === id ? { ...file, tag } : file
-      )
-    );
-  };// Remove a file from the list
+  // Remove a file from the list
   const removeFile = (id: string) => {
     setFiles(prev => {
       const newFiles = prev.filter(file => file.id !== id);
       return newFiles;
     });
+    
   };
-
   // handleClose
   const handleClose = () => {
     setFiles([]);
     onOpenChange(false);
+    setFormData(prev => ({
+      ...prev,
+      folderPathId:''
+    }));
+    
   };
-  const handleOptionChange = (newValue: MultiValue<OptionType>, _actionMeta: ActionMeta<OptionType>) => {
-        setSelectedOptions([...newValue]);
-    };
-console.log("option change value",selectedOptions);  
+const handleOptionChange = (fileId: string, newValue: MultiValue<OptionType>, _actionMeta?: ActionMeta<OptionType>) => {
+  setFiles(prev =>
+    prev.map(file =>
+      file.id === fileId ? { ...file, tags: Array.isArray(newValue) ? [...newValue] : [] } : file
+    )
+  );
+};
+const handleInputChange = (fileId: string, value: string) => {
+  setInputValues(prev => ({ ...prev, [fileId]: value }));
+  setMenuOpenStates(prev => ({ ...prev, [fileId]: value.trim() !== '' }));
+};
+const handleCreateOption = (fileId: string, input: string) => {
+  const trimmed = input.trim();
+  if (!trimmed || trimmed.length < 3) {
+    alert('Please enter at least 2 characters');
+    return;
+  }
+  const exists = options.some((opt) => opt.label.toLowerCase() === trimmed.toLowerCase());
+  if (exists) {
+    alert('This tag already exists');
+    return;
+  }
+  const newOption = { label: trimmed, value: trimmed };
+  setFiles(prev =>
+    prev.map(file =>
+      file.id === fileId
+        ? { ...file, tags: [...(file.tags || []), newOption] }
+        : file
+    )
+  );
+  setInputValues(prev => ({ ...prev, [fileId]: '' }));
+  setMenuOpenStates(prev => ({ ...prev, [fileId]: false }));
+};
+const handleFolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+const uploadFileToServer = async () => {
+    const filesToUpload = files;
+    console.log("filesToUpload",filesToUpload);
+    if (filesToUpload.length === 0) {
+      toast.error('No files to upload');
+      onOpenChange(true);
+      return;
+    }
+    try {
+    const fileFormData = new FormData();
+    for (const file of filesToUpload) {
+        fileFormData.append('files', file.file);
+    }
+    fileFormData.append('folderPathId', formData.folderPathId);
+    console.log("current form data...",formData)
+        const response = await axios.post('/media', formData);
+        console.log("current response...",response);
+        return false;
+        if (response.data.success) {
+           onOpenChange(true);
+            console.log('Upload successful...');
+            toast.success('assets added  successfully!');
+            setFiles([]);
+            setFormData(prev=>({
+              ...prev,
+              folderPathId: '',
+              filesData:files
+            }))
+            onOpenChange(true);
+            // router.reload({ only: ['mediaItems'] });
+        } else {
+            toast.error(`asset creation failed`,response.data.message);
+            console.error('Upload failed:', response.data.message);
+        }   
+    } catch (error) {
+        toast.error(`failed to add assets`);
+        console.error('Error during upload:', error);
+    }
+    console.log("current form datas..",formData);
+    return false;
+    toast.success('Files uploaded successfully');
+  };
 return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
@@ -187,34 +271,33 @@ return (
                   <div className='flex items-center gap-4'>
                     <CreatableSelect<OptionType, true>
                     isMulti
-                    options={filteredOptions}
-                    value={selectedOptions}
-                    // onChange={(value) => setFormData(prev => ({ ...prev, parent_folder_id: value ?? "" }))}
-                    onChange={handleOptionChange}
+                    options={getFilteredOptions(inputValues[file.id] || '')}
+                    value={file.tags}
+                    onChange={(value, actionMeta) => handleOptionChange(file.id, value, actionMeta)}
                     placeholder="Add image tags..."
-                    // inputValue={inputValue}
-                    // onInputChange={handleInputChange}
-                    // menuIsOpen={menuIsOpen}
-                    // styles={{
-                    //     multiValue: (base) => ({
-                    //         ...base,
-                    //         backgroundColor: '#e9e9ff',
-                    //         color: '#333',
-                    //     }),
-                    //     multiValueLabel: (base) => ({
-                    //         ...base,
-                    //         color: '#333',
-                    //     }),
-                    //     multiValueRemove: (base) => ({
-                    //         ...base,
-                    //         cursor: 'pointer',
-                    //         ':hover': {
-                    //             backgroundColor: '#a78bfa',
-                    //             color: 'white',
-                    //         },
-                    //     }),
-                    // }}
-                    // onCreateOption={handleCreateOption}
+                    inputValue={inputValues[file.id] || ''}
+                    onInputChange={(value) => handleInputChange(file.id, value)}
+                    menuIsOpen={menuOpenStates[file.id] || false}
+                    styles={{
+                        multiValue: (base) => ({
+                            ...base,
+                            backgroundColor: '#e9e9ff',
+                            color: '#333',
+                        }),
+                        multiValueLabel: (base) => ({
+                            ...base,
+                            color: '#333',
+                        }),
+                        multiValueRemove: (base) => ({
+                            ...base,
+                            cursor: 'pointer',
+                            ':hover': {
+                                backgroundColor: '#a78bfa',
+                                color: 'white',
+                            },
+                        }),
+                    }}
+                    onCreateOption={(value)=>handleCreateOption(file.id,value)}
                 />
                     
                     <button 
@@ -231,25 +314,21 @@ return (
           </ul>
         )}
         <div className="flex w-full justify-between gap-4 md:gap-6 mt-8">
-          <Select value={newFieldType} onValueChange={(e) => setNewFieldType(e)}>
-            <SelectTrigger className="h-10 w-[150px] bg-input justify-between text-sm">
-              <SelectValue placeholder="Map location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Image">Image</SelectItem>
-              <SelectItem value="Icon">Icon</SelectItem>
-              <SelectItem value="Video">Video</SelectItem>
-            </SelectContent>
-          </Select>
+          <FolderSelect
+                folders={folders}
+                value={formData.folderPathId}
+                onChange={(value) => setFormData(prev => ({ ...prev, folderPathId: value ?? "" }))}
+                placeholder="-- Select Destination Folder --"
+            />
           <div className='flex items-center gap-4 md:gap-6 '>
             <Button variant={'secondary'} title="Cancel" type="button" className="w-1/2 md:w-[134px]">
               Cancel{' '}
             </Button>
-            <DialogClose asChild>
-              <Button variant={'default'} title="Upload" type="button" className="w-1/2 md:w-[134px]">
+            {/* <DialogClose asChild> */}
+              <Button onClick={uploadFileToServer} variant={'default'} title="Upload" type="button" className="w-1/2 md:w-[134px]">
                 Upload{' '}
               </Button>
-            </DialogClose>
+            {/* </DialogClose> */}
           </div>
         </div>
       </DialogContent>
