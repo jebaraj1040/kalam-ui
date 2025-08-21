@@ -159,12 +159,15 @@ const uploadFileToServer = async () => {
       return;
     }
     try {
-    const fileFormData = new FormData();
-    for (const file of filesToUpload) {
-        fileFormData.append('files', file.file);
-    }
-    fileFormData.append('folderPathId', formData.folderPathId);
-    console.log("current form data...",formData)
+    const uploadData = new FormData();
+    uploadData.append('folderPathId', formData.folderPathId);
+    filesToUpload.forEach((file,index)=>{
+      uploadData.append('files',file.file);
+      if(file.tags && file.tags.length>0){
+        uploadData.append(`filesTags[${index}]`,JSON.stringify(file.tags))
+      }
+    })
+    console.log("current form data...",uploadData)
         const response = await axios.post('/media', formData);
         console.log("current response...",response);
         return false;
