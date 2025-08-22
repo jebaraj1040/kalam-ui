@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Media;
 
+use App\Helpers\Utils;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -45,9 +46,11 @@ class MediaController extends Controller
 
         $media->getCollection()->transform(function ($item) use ($folders, $imageTags) {
             $folder = $folders->get($item->path_id);
+            $imageSource = collect($item->path_id)->map(fn($id) => asset('storage/public/uploads/' . $folders->get($id)?->name . '/' . $item->name))->filter();
             $tagNames = collect($item->tags)->map(fn($id) => $imageTags->get($id)?->tagname)->filter()->implode(', ');
             $item->folder = $folder ? $folder->toArray() : null;
             $item->tagNames = $tagNames;
+            $item->imageSrc = $imageSource;
             return $item;
         });
 
@@ -80,6 +83,8 @@ class MediaController extends Controller
                         $rejectedFiles[] = $file->getClientOriginalName();
                         continue;
                     }
+                    $fileSize = Utils::formatBytes($file->getSize());
+                    $imageDimension = Utils::getFileDimension($file);
                     $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                     $random = Str::random(10);
                     $fileName = "{$originalName}_{$random}.{$extension}";
@@ -89,6 +94,8 @@ class MediaController extends Controller
                         'name'    => $fileName,
                         'path_id' => $folderPathId,
                         'tags' => $fileTagIds,
+                        'imageSize' => $fileSize,
+                        'imageDimension' => $imageDimension['width'] . 'x' . $imageDimension['height']
                     ]);
                 }
             }
@@ -103,17 +110,12 @@ class MediaController extends Controller
         if (!empty($tags)) {
             foreach ($tags as $key => $tageValue) {
                 $value = $tageValue['value'];
-                $updateMediaTag = ImageTag::find($value);
-                $mediaTagId = '';
-                if ($updateMediaTag) {
-                    $mediaTagId = (string) $updateMediaTag->_id;
-                } else {
-                    $updateMediaTag = ImageTag::create([
-                        'tagname' => $value
-                    ]);
-                    $mediaTagId = (string) $updateMediaTag->_id;
-                }
-                $tagIds[] = $mediaTagId;
+                $label = $tageValue['label'];
+                $updateMediaTag = ImageTag::updateOrCreate([
+                    '_id' => $value,
+                    'tagname' => $label
+                ]);
+                $tagIds[] = (string) $updateMediaTag->_id;
             }
         }
         return $tagIds;
