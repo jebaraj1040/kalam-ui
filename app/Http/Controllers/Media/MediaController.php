@@ -237,6 +237,7 @@ class MediaController extends Controller
             $newPath = $cdnPath . '/' . $newFolderName . '/' . $fileName;
 
             if (!file_exists(dirname($newPath))) {
+                
                 mkdir(dirname($newPath), 0775, true);
             }
 
